@@ -3,7 +3,7 @@ from flask import request, jsonify
 import config
 import os
 import json
-from util.customLogger import LogGen
+# from util.customLogger import LogGen
 
 # Set up logging
 # gupshup_logger = LogGen.loggen('gupshup')

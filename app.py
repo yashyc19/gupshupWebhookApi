@@ -1,6 +1,6 @@
 from flask_restful import Api
 from flask import Flask
-from app.resources.gupshup import GupshupAPI, GupshupWebhook
+from src.resources.gupshup import GupshupAPI, GupshupWebhook
 
 app = Flask(__name__)
 api = Api(app)

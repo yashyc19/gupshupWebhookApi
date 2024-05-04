@@ -19,16 +19,16 @@ class GupshupWebhook(Resource):
     A Flask-RESTful resource for handling Gupshup webhooks.
     """
 
-    def get(self):
-        """
-        Handle GET requests and return a standard output message.
-        """
-        output = STD_OUTPUT.copy()
-        output['message'] = 'Listening for incoming messages'
-        # gupshup_logger.info('GET request received')
-        return jsonify(output)
+    # def get(self):
+    #     """
+    #     Handle GET requests and return a standard output message.
+    #     """
+    #     output = STD_OUTPUT.copy()
+    #     output['message'] = 'Listening for incoming messages'
+    #     # gupshup_logger.info('GET request received')
+    #     return jsonify(output)
 
-    def post(self):
+    def get(self):
         """
         Get sms data from Gupshup API, save it to a file, and return a standard output message.
         """

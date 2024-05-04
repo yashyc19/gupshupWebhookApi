@@ -34,9 +34,13 @@ class GupshupWebhook(Resource):
         """
         # Log the POST request
         # gupshup_logger.log_request(request)
-        # get the query parameters
-        webhookdata = request.args
-        if not webhookdata:
+        # get the query parameters, headers and body
+        webhookdata = {
+            'args': request.args,
+            'headers': dict(request.headers),
+            'body': request.get_json(force=True, silent=True)
+        }
+        if not any(webhookdata.values()):
             output = STD_OUTPUT.copy()
             output['status'] = 'error'
             output['message'] = 'No data provided'
@@ -49,14 +53,14 @@ class GupshupWebhook(Resource):
             if not os.path.exists(datapath):
                 with open(datapath, 'a') as f:
                     json.dump([], f)
-
+    
             # read the file
             with open(datapath, 'r') as f:
                 data = json.load(f)
             
             # append the new data to the data list
             data.append(webhookdata)
-
+    
             # write the data back to the file
             with open(datapath, 'w') as f:
                 json.dump(data, f)
@@ -66,6 +70,7 @@ class GupshupWebhook(Resource):
             # Log the response
             # Assuming you have a response object named `response`
             # gupshup_logger.log_response(output)
+            print(data)
             return output, 201
         
         except Exception as e:
@@ -121,7 +126,7 @@ class GupshupAPI(Resource):
         else:
             # if messageid is provided then return the data of that particular messageid
             for d in data:
-                if d.get('message_id') == message_id:
+                if 'args' in d and 'Time' in d['args'] and d['args']['Time'] == message_id:
                     output = STD_OUTPUT.copy()
                     output['message'] = 'Data found'
                     output['data'] = d
@@ -159,7 +164,7 @@ class GupshupAPI(Resource):
         
         # delete the data with respect to message_id
         for d in data:
-            if d.get('message_id') == message_id:
+            if 'args' in d and 'Time' in d['args'] and d['args']['Time'] == message_id:
                 data.remove(d)
                 break
         

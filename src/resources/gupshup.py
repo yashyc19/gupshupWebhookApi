@@ -35,11 +35,7 @@ class GupshupWebhook(Resource):
         # Log the POST request
         # gupshup_logger.log_request(request)
         # get the query parameters, headers and body
-        webhookdata = {
-            'args': request.args,
-            'headers': dict(request.headers),
-            'body': request.get_json(force=True, silent=True)
-        }
+        webhookdata = request.args
         if not any(webhookdata.values()):
             output = STD_OUTPUT.copy()
             output['status'] = 'error'

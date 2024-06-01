@@ -117,7 +117,7 @@ class GupshupAPI(Resource):
             return output, 200
         else:
             # if messageid is provided then return the data of that particular messageid
-            for d in data:
+            for d in reversed(data):
                 if 'Time' in d and d['Time'] == message_id:
                     output = STD_OUTPUT.copy()
                     output['message'] = 'Data found'
@@ -155,7 +155,8 @@ class GupshupAPI(Resource):
             data = json.load(f)
         
         # delete the data with respect to message_id
-        for d in data:
+        for d in reversed(data):
+            print(d)
             if 'Time' in d and d['Time'] == message_id:
                 data.remove(d)
                 break

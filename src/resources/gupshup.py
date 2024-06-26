@@ -28,7 +28,7 @@ class GupshupWebhook(Resource):
     #     # gupshup_logger.info('GET request received')
     #     return jsonify(output)
 
-    def get(self, phno):
+    def get(self, phno=None):
         """
         Get sms data from Gupshup API, save it to a file, and return a standard output message.
         """
@@ -39,7 +39,7 @@ class GupshupWebhook(Resource):
             output['message'] = 'No data provided'
             return output, 400
         
-        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}'
+        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}' if phno else config.WEBHOOK_DATA_FILE
         # os.makedirs(os.path.dirname(datapath), exist_ok=True)
         try:
             if not os.path.exists(datapath):
@@ -87,7 +87,7 @@ class GupshupAPI(Resource):
     # this get method will either recv request like /gupshup/api or /gupshup/api/<messageid>
     # if the request is /gupshup/api then it will return, the whole data saved in the file
     # if the request is /gupshup/api/<messageid> then it will return the data of that particular messageid
-    def get(self,phno, message_id=None):
+    def get(self,phno=None, message_id=None):
         """
         Get sms data from Gupshup API data file and return it.
 
@@ -97,7 +97,7 @@ class GupshupAPI(Resource):
         # gupshup_logger.log_request(request)
         # get the query parameters
 
-        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}'
+        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}' if phno else config.WEBHOOK_DATA_FILE
         # if file does not exist then return no data found
         if not os.path.exists(datapath):
             output = STD_OUTPUT.copy()
@@ -129,7 +129,7 @@ class GupshupAPI(Resource):
         
     # delete method for the Gupshup API
     # this delete method will delete the data with respect to message_id saved in the file
-    def delete(self, phno, message_id=None):
+    def delete(self, phno=None, message_id=None):
         """
         Delete sms data from Gupshup API data file and return a standard output message.
         """
@@ -143,7 +143,7 @@ class GupshupAPI(Resource):
             output['message'] = 'No message_id provided'
             return output, 400
 
-        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}'
+        datapath = f'{phno}_{config.WEBHOOK_DATA_FILE}' if phno else config.WEBHOOK_DATA_FILE
         # if file does not exist then return no data found
         if not os.path.exists(datapath):
             output = STD_OUTPUT.copy()

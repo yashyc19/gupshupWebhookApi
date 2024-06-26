@@ -7,13 +7,14 @@ api = Api(app)
 
 # Get sms data from gupshup via webhook endpoint
 # Add one more parameter to the endpoint, new /gupshup/<phno>/webhook
-api.add_resource(GupshupWebhook, '/gupshup/<string:phno>/webhook')
 # api.add_resource(GupshupWebhook, '/gupshup/webhook')
+api.add_resource(GupshupWebhook, '/gupshup/<string:phno>/webhook', '/gupshup/webhook')
 
 # Get and delete sms data from gupshupapi via API endpoint
 # Add one more parameter to the endpoint, new /gupshup/<phno>/api...
-api.add_resource(GupshupAPI, '/gupshup/<string:phno>/api', '/gupshup/<string:phno>/api/<string:message_id>')
 # api.add_resource(GupshupAPI, '/gupshup/api', '/gupshup/api/<string:message_id>')
+api.add_resource(GupshupAPI, '/gupshup/<string:phno>/api', '/gupshup/<string:phno>/api/<string:message_id>', 
+                 '/gupshup/api', '/gupshup/api/<string:message_id>')
 
 
 if __name__ == '__main__':

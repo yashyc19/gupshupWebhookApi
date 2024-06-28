@@ -102,7 +102,8 @@ class GupshupAPI(Resource):
         if not os.path.exists(datapath):
             output = STD_OUTPUT.copy()
             output['message'] = 'No data file found'
-            return output, 404
+            # return output and status 20x to say that api call is success with no data found
+            return output, 200  
         
         # read the file
         with open(datapath, 'r') as f:

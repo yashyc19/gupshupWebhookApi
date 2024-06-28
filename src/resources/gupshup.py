@@ -102,7 +102,8 @@ class GupshupAPI(Resource):
         if not os.path.exists(datapath):
             output = STD_OUTPUT.copy()
             output['message'] = 'No data file found'
-            return output, 404
+            # return output and status 20x to say that api call is success with no data found
+            return output, 200  
         
         # read the file
         with open(datapath, 'r') as f:
@@ -118,7 +119,7 @@ class GupshupAPI(Resource):
         else:
             # if messageid is provided then return the data of that particular messageid
             for d in reversed(data):
-                if 'Time' in d and d['Time'] == message_id:
+                if 'timestamp' in d and d['timestamp'] == message_id:
                     output = STD_OUTPUT.copy()
                     output['message'] = 'Data found'
                     output['data'] = d
@@ -157,7 +158,7 @@ class GupshupAPI(Resource):
         # delete the data with respect to message_id
         for d in reversed(data):
             print(d)
-            if 'Time' in d and d['Time'] == message_id:
+            if 'timestamp' in d and d['timestamp'] == message_id:
                 data.remove(d)
                 break
         

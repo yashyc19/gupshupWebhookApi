@@ -77,7 +77,6 @@ class GupshupAPI(Resource):
     """
     A Flask-RESTful resource for handling Gupshup API requests.
     """
-    # TODO: Implement this class
     STD_OUTPUT = {
         'status': 'success',
         'message': 'This is a Gupshup API',
@@ -149,7 +148,7 @@ class GupshupAPI(Resource):
         if not os.path.exists(datapath):
             output = STD_OUTPUT.copy()
             output['message'] = 'No data file found'
-            return output, 404
+            return output, 200
         
         # read the file
         with open(datapath, 'r') as f:

@@ -9,5 +9,4 @@ services:
       - ./data:/app/data
     environment:
       - ENV=dev
-      - DEBUG=true
     restart: always

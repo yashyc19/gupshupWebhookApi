@@ -1,17 +1,31 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9.7-slim
+FROM python:3.12-slim
 
-# Set the working directory in the container
-WORKDIR /usr/gupshupWebhookAPI
+# Set working directory
+WORKDIR /app
 
-# Copy the current directory contents into the container at /usr/gupshupWebhookAPI
-COPY . .
+# Copy requirements first for better layer caching
+COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 8000 for the app
+# Copy the rest of the application
+COPY . .
+
+# Create volume for data persistence
+VOLUME ["/app/data"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Set environment variables
+ENV PORT=8000
+ENV HOST=0.0.0.0
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
 EXPOSE 8000
 
-# Run the application:
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+# Run the application with gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "src.app:app"]

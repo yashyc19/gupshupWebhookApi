@@ -9,6 +9,8 @@ Routes:
     GET /api/<source>/<phone>: Get all messages for a source and phone number
     GET /api/<source>/<phone>/<message_id>: Get a specific message by ID
     DELETE /api/<source>/<phone>/<message_id>: Delete a specific message by ID
+    DELETE /api/<source>/<phone>/delete_all: Delete all messages for a source and phone
+    DELETE /api/delete_all_data: Delete all webhook data across all sources and phones
 """
 
 from typing import Dict, Any, Tuple
@@ -46,6 +48,7 @@ def get_all_messages(source: str, phone: str) -> Tuple[Dict[str, Any], int]:
         Tuple[Dict[str, Any], int]: A tuple containing:
             - A JSON object with message IDs as keys and message data as values
             - HTTP status code 200 (OK)
+            - If parameters are invalid: Error message and HTTP status 400 (Bad Request)
             
     Response Format:
         {
@@ -62,6 +65,13 @@ def get_all_messages(source: str, phone: str) -> Tuple[Dict[str, Any], int]:
     Example:
         GET /api/gupshup/1234567890
     """
+    # Validate input parameters
+    if not source or not source.strip():
+        return jsonify({"error": "Source is required"}), 400
+    
+    if not phone or not phone.strip():
+        return jsonify({"error": "Phone number is required"}), 400
+        
     messages = store.get_messages(source, phone)
     return jsonify(messages), 200
 
@@ -82,6 +92,7 @@ def get_message(source: str, phone: str, message_id: str) -> Tuple[Dict[str, Any
         Tuple[Dict[str, Any], int]: A tuple containing:
             - If message exists: The message data and HTTP status 200 (OK)
             - If message not found: Error message and HTTP status 404 (Not Found)
+            - If parameters are invalid: Error message and HTTP status 400 (Bad Request)
             
     Response Format (success):
         {
@@ -97,6 +108,16 @@ def get_message(source: str, phone: str, message_id: str) -> Tuple[Dict[str, Any
     Example:
         GET /api/gupshup/1234567890/2023-04-22T10:00:00Z
     """
+    # Validate input parameters
+    if not source or not source.strip():
+        return jsonify({"error": "Source is required"}), 400
+    
+    if not phone or not phone.strip():
+        return jsonify({"error": "Phone number is required"}), 400
+        
+    if not message_id or not message_id.strip():
+        return jsonify({"error": "Message ID is required"}), 400
+    
     message = store.get_message(source, phone, message_id)
     if not message:
         return jsonify({"error": "Message not found"}), 404
@@ -119,6 +140,7 @@ def delete_message(source: str, phone: str, message_id: str) -> Tuple[Dict[str, 
         Tuple[Dict[str, Any], int]: A tuple containing:
             - If deletion successful: Success message and HTTP status 200 (OK)
             - If message not found: Error message and HTTP status 404 (Not Found)
+            - If parameters are invalid: Error message and HTTP status 400 (Bad Request)
             
     Response Format (success):
         {
@@ -133,7 +155,113 @@ def delete_message(source: str, phone: str, message_id: str) -> Tuple[Dict[str, 
     Example:
         DELETE /api/gupshup/1234567890/2023-04-22T10:00:00Z
     """
+    # Validate input parameters
+    if not source or not source.strip():
+        return jsonify({"error": "Source is required"}), 400
+    
+    if not phone or not phone.strip():
+        return jsonify({"error": "Phone number is required"}), 400
+        
+    if not message_id or not message_id.strip():
+        return jsonify({"error": "Message ID is required"}), 400
+    
     success = store.delete_message(source, phone, message_id)
     if not success:
         return jsonify({"error": "Message not found"}), 404
     return jsonify({"message": "Message deleted successfully"}), 200
+
+@api_bp.route('/<source>/<phone>/delete_all', methods=['DELETE'])
+def delete_all_messages(source: str, phone: str) -> Tuple[Dict[str, Any], int]:
+    """
+    Delete all messages for a specific source and phone number.
+    
+    This endpoint removes all stored webhook messages for a specific
+    source (e.g., 'gupshup') and phone number combination.
+    
+    Args:
+        source (str): The source of the webhook (e.g., 'gupshup', 'twilio')
+        phone (str): The phone number associated with the webhook messages
+    
+    Returns:
+        Tuple[Dict[str, Any], int]: A tuple containing:
+            - If deletion successful: Success message and HTTP status 200 (OK)
+            - If operation failed: Error message and HTTP status 500 (Internal Server Error)
+            - If parameters are invalid: Error message and HTTP status 400 (Bad Request)
+            
+    Response Format (success):
+        {
+            "message": "All messages deleted successfully"
+        }
+        
+    Response Format (error):
+        {
+            "error": "Failed to delete messages"
+        }
+            
+    Example:
+        DELETE /api/gupshup/1234567890/delete_all
+    """
+    # Validate input parameters
+    if not source or not source.strip():
+        return jsonify({"error": "Source is required"}), 400
+    
+    if not phone or not phone.strip():
+        return jsonify({"error": "Phone number is required"}), 400
+    
+    success = store.delete_all_messages(source, phone)
+    if not success:
+        return jsonify({"error": "Failed to delete messages"}), 500
+    return jsonify({"message": "All messages deleted successfully"}), 200
+
+@api_bp.route('/delete_all_data', methods=['DELETE'])
+def delete_all_data() -> Tuple[Dict[str, Any], int]:
+    """
+    Delete all webhook data across all sources and phone numbers.
+    
+    This endpoint wipes all data from all JSON files in the data directory,
+    effectively deleting all stored messages for all sources and phone numbers.
+    
+    Returns:
+        Tuple[Dict[str, Any], int]: A tuple containing:
+            - A JSON response with results and HTTP status code
+            
+    Response Format (success):
+        {
+            "message": "All data deleted successfully",
+            "details": {
+                "gupshup_1234567890_webhook_data.json": true,
+                "twilio_9876543210_webhook_data.json": true
+            }
+        }
+        
+    Response Format (partial success/failure):
+        {
+            "message": "Some files could not be cleared",
+            "details": {
+                "gupshup_1234567890_webhook_data.json": true,
+                "twilio_9876543210_webhook_data.json": false
+            }
+        }
+            
+    Example:
+        DELETE /api/delete_all_data
+    """
+    results = store.delete_all_data()
+    
+    # Check if any files were processed
+    if not results:
+        return jsonify({
+            "message": "No data files found to delete"
+        }), 200
+    
+    # Check if any files failed to be cleared
+    if all(results.values()):
+        return jsonify({
+            "message": "All data deleted successfully",
+            "details": results
+        }), 200
+    else:
+        return jsonify({
+            "message": "Some files could not be cleared",
+            "details": results
+        }), 207  # 207 Multi-Status

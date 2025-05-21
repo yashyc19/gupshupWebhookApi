@@ -208,3 +208,81 @@ class JsonFilePersistence:
             # In a real app, use proper logging
             print(f'Error deleting message: {str(e)}')
             return False
+    
+    def delete_all_messages(self, source: str, phone: str) -> bool:
+        """
+        Delete all messages for a specific source and phone number.
+        
+        This method completely clears the JSON file for a given source and phone,
+        effectively deleting all stored messages for that combination.
+        
+        Args:
+            source (str): The source of the webhook (e.g., 'gupshup', 'twilio')
+            phone (str): The phone number associated with the webhook
+            
+        Returns:
+            bool: True if the operation was successful, False if there was an error
+            
+        Example:
+            >>> persistence = JsonFilePersistence()
+            >>> success = persistence.delete_all_messages('gupshup', '1234567890')
+            >>> print(success)  # True if deletion was successful
+        """
+        file_path = self._get_file_path(source, phone)
+        
+        if not os.path.exists(file_path):
+            return False
+            
+        try:
+            # Write an empty object to the file
+            with open(file_path, 'w') as file:
+                json.dump({}, file)
+            
+            return True
+        except Exception as e:
+            # In a real app, use proper logging
+            print(f'Error deleting all messages: {str(e)}')
+            return False
+            
+    def delete_all_data(self) -> Dict[str, bool]:
+        """
+        Delete all webhook data across all sources and phone numbers.
+        
+        This method wipes the content of all JSON files in the data directory,
+        effectively deleting all stored messages for all sources and phone numbers.
+        
+        Returns:
+            Dict[str, bool]: A dictionary with file names as keys and success status as values
+            
+        Example:
+            >>> persistence = JsonFilePersistence()
+            >>> results = persistence.delete_all_data()
+            >>> print(results)  # {'gupshup_1234567890_webhook_data.json': True, ...}
+        """
+        results = {}
+        
+        # Check if data directory exists
+        if not os.path.exists(self.data_dir):
+            return results
+            
+        try:
+            # Find all JSON files in the data directory
+            for filename in os.listdir(self.data_dir):
+                if filename.endswith('_webhook_data.json'):
+                    file_path = os.path.join(self.data_dir, filename)
+                    
+                    try:
+                        # Write an empty object to each file
+                        with open(file_path, 'w') as file:
+                            json.dump({}, file)
+                        results[filename] = True
+                    except Exception as e:
+                        # In a real app, use proper logging
+                        print(f'Error clearing file {filename}: {str(e)}')
+                        results[filename] = False
+            
+            return results
+        except Exception as e:
+            # In a real app, use proper logging
+            print(f'Error deleting all data: {str(e)}')
+            return results

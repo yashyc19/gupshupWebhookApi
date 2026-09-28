@@ -22,7 +22,7 @@ webhook_bp = Blueprint('webhook', __name__, url_prefix='/webhook')
 # Initialize the persistence layer
 store = JsonFilePersistence()
 
-@webhook_bp.route('/<source>/<phone>', methods=['POST'])
+@webhook_bp.route('/<source>/<phone>', methods=['GET', 'POST'])
 def receive_webhook(source: str, phone: str) -> Tuple[Dict[str, Any], int]:
     """
     Receive and process webhook data from external services.
